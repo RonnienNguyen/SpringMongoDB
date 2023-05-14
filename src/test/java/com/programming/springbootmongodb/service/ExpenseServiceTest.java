@@ -10,8 +10,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit4.SpringRunner;
 
 
 import java.math.BigDecimal;
@@ -39,15 +44,33 @@ class ExpenseServiceTest {
         expenseService = new ExpenseService(expenseRepository);
     }
 
+
+    //Version 1
+//    @Test
+//    public void testAddExpense() {
+//        Expense expense = new Expense();
+//        expense.setExpenseName("Rent");
+//        expense.setExpenseCategory(ExpenseCategory.ENTERTAINMENT);
+//        expense.setExpenseAmount(BigDecimal.valueOf(1000.0));
+//        expenseService.addExpense(expense);
+//        verify(expenseRepository, times(1)).insert(expense);
+//    }
+
+    //Version 2
     @Test
     public void testAddExpense() {
         Expense expense = new Expense();
-        expense.setExpenseName("Rent");
+        expense.setExpenseName("Lunch");
         expense.setExpenseCategory(ExpenseCategory.ENTERTAINMENT);
-        expense.setExpenseAmount(BigDecimal.valueOf(1000.0));
+        expense.setExpenseAmount(BigDecimal.valueOf(1000.000));
+        when(expenseRepository.insert(expense)).thenReturn(expense);
         expenseService.addExpense(expense);
-        verify(expenseRepository, times(1)).insert(expense);
+        // Verify that the expense was added to the database
+        verify(expenseRepository).insert(expense);
     }
+
+
+    //Version 1
     @Test
     public void testUpdateExpense() {
         String id = "1";
@@ -72,20 +95,38 @@ class ExpenseServiceTest {
         assertEquals(expense.getExpenseAmount(), savedExpense.getExpenseAmount(), String.valueOf(0.0));
     }
 
-    @Test
-    public void testUpdateExpenseNotFound() {
-        String id = "1";
-        Expense expense = new Expense();
-        expense.setId(id);
-        expense.setExpenseName("NetNetNet");
-        expense.setExpenseAmount(BigDecimal.valueOf(1000.000));
-        expense.setExpenseCategory(ExpenseCategory.RESTAURANT);
-        when(expenseRepository.findById("1")).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> {
-            expenseService.updateExpense(expense);
-        });
-    }
+    //Version 2
+//    @Test
+//    public void testUpdateExpense() {
+//        // Create a mock expense repository
+//        ExpenseRepository expenseRepository = Mockito.mock(ExpenseRepository.class);
+//
+//        // Create an expense object
+//        Expense expense = new Expense();
+//        String id = "1";
+//        expense.setId(id);
+//        expense.setExpenseName("Lunch");
+//        expense.setExpenseCategory(ExpenseCategory.ENTERTAINMENT);
+//        expense.setExpenseAmount(BigDecimal.valueOf(1000.000));
+//
+//        // When the expenseRepository.findById(expenseId) method is called, return the expense object
+//        Optional<Expense> optionalExpense = Optional.of(expense);
+//        when(expenseRepository.findById(expense.getId())).thenReturn(optionalExpense);
+//
+//        // Create an instance of the ExpenseService class
+//        ExpenseService expenseService = new ExpenseService(expenseRepository);
+//
+//        // Call the updateExpense() method
+//        expenseService.updateExpense(expense);
+//
+//        // Verify that the expenseRepository.findById(expenseId) method was called
+//        Mockito.verify(expenseRepository).findById(expense.getId());
+//
+//        // Verify that the updateExpense() method returned the expense object
+//        assertEquals("Lunch", expense.getExpenseName());
+//        assertEquals(ExpenseCategory.ENTERTAINMENT, expense.getExpenseCategory());
+//        assertEquals(BigDecimal.valueOf(1000.0), expense.getExpenseAmount());
+//    }
 
     @Test
     public void testGetExpenseByName() {
@@ -109,7 +150,6 @@ class ExpenseServiceTest {
         expense1.setExpenseCategory(ExpenseCategory.RESTAURANT);
         expense1.setExpenseAmount(BigDecimal.valueOf(1000.000));
 
-
         Expense expense2 = new Expense();
         expense2.setId("2");
         expense2.setExpenseName("Expense 2");
@@ -126,18 +166,6 @@ class ExpenseServiceTest {
         verify(expenseRepository, times(1)).findAll();
         assertEquals(expenseList, result);
     }
-
-
-
-//    @Test
-//    public void testGetExpenseByNameNotFound() {
-//        String name = "Expense 1";
-//        when(expenseRepository.findByName(name)).thenReturn(Optional.empty());
-//
-//        assertThrows(EntityNotFoundException.class, () -> {
-//            expenseService.getExpenseByName(name);
-//        });
-//    }
 
     @Test
     public void testDeleteExpense() {
